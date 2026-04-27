@@ -4,6 +4,13 @@ Web app for printing labels on the **Seabird P1-12A** Bluetooth thermal printer 
 
 Replaces the discontinued Android app "Seabird Sticker Printer" with a browser-based solution using the Web Bluetooth API. Vibe-Coded with Antigravity + Claude and Gemini.
 
+## 🚀 Live Demo
+
+Try it out directly in your browser without installation:
+**[https://flyingt.github.io/Seabird-P1-12A/](https://flyingt.github.io/Seabird-P1-12A/)**
+
+*(Note: Web Bluetooth requires Chrome/Edge and a Bluetooth-capable device. Ensure your printer is turned on.)*
+
 ## Features
 
 - **BLE connection** directly in the browser (Chrome/Edge)
