@@ -33,8 +33,8 @@ class SeabirdPrinter {
 
   // Default config
   static DEFAULT_PAPER_WIDTH = 96; // pixels (12mm @ 203 DPI)
-  static CHUNK_SIZE = 20; // BLE write chunk size in bytes
-  static CHUNK_DELAY = 12; // ms between chunks
+  static CHUNK_SIZE = 16; // BLE write chunk size (matches APK Android default)
+  static CHUNK_DELAY = 25; // ms between chunks
 
   set onStatusChange(fn) { this._onStatusChange = fn; }
 
@@ -203,7 +203,7 @@ class SeabirdPrinter {
 
     for (let i = 0; i < packet.length; i += SeabirdPrinter.CHUNK_SIZE) {
       const chunk = packet.slice(i, Math.min(i + SeabirdPrinter.CHUNK_SIZE, packet.length));
-      await this.characteristic.writeValueWithoutResponse(chunk);
+      await this.characteristic.writeValue(chunk);
       await this._delay(SeabirdPrinter.CHUNK_DELAY);
 
       const chunkIdx = Math.floor(i / SeabirdPrinter.CHUNK_SIZE) + 1;
@@ -346,7 +346,7 @@ class SeabirdPrinter {
   async _writeChunked(data) {
     for (let i = 0; i < data.length; i += SeabirdPrinter.CHUNK_SIZE) {
       const chunk = data.slice(i, Math.min(i + SeabirdPrinter.CHUNK_SIZE, data.length));
-      await this.characteristic.writeValueWithoutResponse(chunk);
+      await this.characteristic.writeValue(chunk);
       if (i + SeabirdPrinter.CHUNK_SIZE < data.length) {
         await this._delay(SeabirdPrinter.CHUNK_DELAY);
       }
