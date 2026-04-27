@@ -44,20 +44,6 @@ docker compose up -d
 Open in your browser: **`https://<your-ip>:8443`**
 Accept the certificate warning on first visit – Web Bluetooth will work.
 
-## Local Development
-
-```powershell
-powershell -ExecutionPolicy Bypass -File serve.ps1
-# Open http://localhost:8080
-```
-
-## Build Docker Image Locally
-
-```bash
-docker build -t seabird-label-printer .
-docker run -d -p 8081:80 -p 8443:443 -e HTTPS_PORT=8443 seabird-label-printer
-```
-
 > **Note – Web Bluetooth & Secure Context**:
 > Web Bluetooth requires HTTPS or `localhost`. The Docker image includes a
 > self-signed SSL certificate – just accept the browser warning on first visit.
@@ -76,19 +62,3 @@ The proprietary protocol was reverse-engineered from the Seabird Sticker Printer
 | Device Info | `A3 01 00 00 00 35` → Response `0x36` |
 | Paper Status | `A3 01 00 00 00 45` → Response `0x46` |
 | Print Command | `0x25` + Bitmap (1-bit mono, column-wise) |
-
-## File Structure
-
-```
-├── index.html         # Label editor (main app)
-├── explorer.html      # BLE explorer (debug tool)
-├── style.css          # Styling
-├── app.js             # Editor logic
-├── printer.js         # BLE + SSBP protocol
-├── explorer.js        # Explorer logic
-├── nginx.conf         # HTTPS config
-├── Dockerfile
-├── docker-compose.yml
-├── serve.ps1          # Local HTTP server
-└── .github/workflows/ # CI/CD: Docker image build
-```

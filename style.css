@@ -226,6 +226,23 @@ body::before {
   box-shadow: 0 2px 12px rgba(0,0,0,0.4);
 }
 
+.print-direction {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 1.25rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.75rem;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.direction-detail {
+  color: var(--text-muted);
+  font-weight: 400;
+  font-size: 0.7rem;
+}
+
 /* ── Editor ───────────────────────────────────────────────── */
 .editor-grid {
   display: grid;
@@ -382,6 +399,10 @@ input[type="range"]::-webkit-slider-thumb {
 .app-footer {
   text-align: center;
   padding-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .footer-link {
@@ -393,6 +414,12 @@ input[type="range"]::-webkit-slider-thumb {
 
 .footer-link:hover {
   color: var(--accent);
+}
+
+.version {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  opacity: 0.6;
 }
 
 /* ── Utility ──────────────────────────────────────────────── */

@@ -307,13 +307,13 @@ class SeabirdPrinter {
     h.push(copies);      // Number of copies
     h.push(0);           // Flags (no cutter line)
 
-    // "Width" in protocol = label feed length (rotatedHeight)
-    h.push(height & 0xFF);
-    h.push((height >> 8) & 0xFF);
-
-    // "Height" in protocol = paper head width (rotatedWidth, e.g. 96)
+    // Image width = paper head width (e.g. 96) – "典型值96,150"
     h.push(width & 0xFF);
     h.push((width >> 8) & 0xFF);
+
+    // Image height = label feed length
+    h.push(height & 0xFF);
+    h.push((height >> 8) & 0xFF);
 
     h.push(1);  // Bit depth: 1 = 1-bit mono
     h.push(0);  // Reserved
