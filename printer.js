@@ -45,7 +45,7 @@ class SeabirdPrinter {
   // ── Connection ───────────────────────────────────────────
   async connect() {
     if (!navigator.bluetooth) {
-      throw new Error('Web Bluetooth nicht unterstützt. Bitte Chrome oder Edge verwenden.');
+      throw new Error('Web Bluetooth not supported. Please use Chrome or Edge.');
     }
 
     this._emitStatus('connecting');
@@ -124,7 +124,7 @@ class SeabirdPrinter {
       setTimeout(() => {
         if (this._notifyResolver) {
           this._notifyResolver = null;
-          reject(new Error('Timeout: Keine Antwort vom Drucker'));
+          reject(new Error('Timeout: No response from printer'));
         }
       }, timeoutMs);
     });
@@ -184,7 +184,7 @@ class SeabirdPrinter {
   // ── Print ────────────────────────────────────────────────
   async print(canvas, copies = 1, onProgress) {
     if (!this.connected || !this.characteristic) {
-      throw new Error('Drucker nicht verbunden');
+      throw new Error('Printer not connected');
     }
 
     copies = Math.max(1, Math.min(99, copies));
@@ -216,16 +216,16 @@ class SeabirdPrinter {
       const resp = await this._waitForResponse(30000);
       if (resp[5] === SeabirdPrinter.CMD_PRINT_RESP) {
         const result = resp[6];
-        if (result === 1) return { success: true, message: 'Druck erfolgreich' };
-        if (result === 4) return { success: false, message: 'Keine Papierkassette' };
-        if (result === 5) return { success: false, message: 'Kein Papier / Papierstau' };
-        return { success: false, message: `Druckfehler (Code ${result})` };
+        if (result === 1) return { success: true, message: 'Print successful' };
+        if (result === 4) return { success: false, message: 'No paper cassette' };
+        if (result === 5) return { success: false, message: 'No paper / paper jam' };
+        return { success: false, message: `Print error (code ${result})` };
       }
     } catch {
       // Many printer versions don't send a response
-      return { success: true, message: 'Daten gesendet' };
+      return { success: true, message: 'Data sent' };
     }
-    return { success: true, message: 'Daten gesendet' };
+    return { success: true, message: 'Data sent' };
   }
 
   // ── Bitmap Encoding (from APK: CzzBlue.js zzDocToData_make_real) ──

@@ -1,83 +1,94 @@
 # 🏷️ Seabird Label Printer – Web App
 
-Web-App zum Drucken von Labels auf dem **Seabird P1-12A** Bluetooth-Thermodrucker direkt vom Computer aus.
+Web app for printing labels on the **Seabird P1-12A** Bluetooth thermal printer directly from your computer.
 
-Ersetzt die Android-App „Seabird Sticker Printer" durch eine browserbasierte Lösung mit Web Bluetooth API.
+Replaces the discontinued Android app "Seabird Sticker Printer" with a browser-based solution using the Web Bluetooth API.
 
 ## Features
 
-- **BLE-Verbindung** direkt im Browser (Chrome/Edge)
-- **Label-Editor** mit Text, Schriftart, Größe und Ausrichtung
-- **Live-Vorschau** des Labels in Originalgröße
-- **Druckfunktion** mit Fortschrittsanzeige
-- **Docker-Deployment** via GitHub Container Registry
+- **BLE connection** directly in the browser (Chrome/Edge)
+- **Label editor** with text, fonts, sizes, and alignment
+- **Live preview** at original print resolution
+- **Print function** with progress indicator
+- **Docker deployment** via GitHub Container Registry
 
-## Voraussetzungen
+## Prerequisites
 
-- **Browser**: Chrome oder Edge (Web Bluetooth erforderlich)
-- **Bluetooth**: BLE-fähiger Bluetooth-Adapter am Computer
-- **HTTPS**: Web Bluetooth erfordert einen sicheren Kontext (`localhost` oder HTTPS)
+- **Browser**: Chrome or Edge (Web Bluetooth required)
+- **Bluetooth**: BLE-capable Bluetooth adapter on your computer
+- **HTTPS**: Web Bluetooth requires a secure context (`localhost` or HTTPS)
 
-## Schnellstart – Docker
+## Quick Start – Docker
+
+Create a `docker-compose.yml`:
+
+```yaml
+services:
+  label-printer:
+    image: ghcr.io/flyingt/seabird-p1-12a:latest
+    container_name: seabird-label-printer
+    ports:
+      - "8081:80"
+      - "8443:443"
+    environment:
+      - HTTPS_PORT=8443
+    restart: unless-stopped
+```
+
+Then run:
 
 ```bash
-# docker-compose.yml herunterladen und starten
-wget https://raw.githubusercontent.com/FlyingT/Seabird-P1-12A/main/docker-compose.yml
 docker compose up -d
-
-# Öffnen: https://192.168.x.x:8443
-# (Zertifikatswarnung im Browser akzeptieren)
 ```
 
-Das Docker Image wird automatisch von GitHub Container Registry (`ghcr.io`) gezogen.
-HTTPS mit selbst-signiertem Zertifikat ist integriert – einfach die Warnung im Browser akzeptieren.
+Open in your browser: **`https://<your-ip>:8443`**
+Accept the certificate warning on first visit – Web Bluetooth will work.
 
-## Lokal entwickeln
+## Local Development
 
 ```powershell
-# PowerShell HTTP-Server starten
 powershell -ExecutionPolicy Bypass -File serve.ps1
-
-# Dann im Browser öffnen: http://localhost:8080
+# Open http://localhost:8080
 ```
 
-## Docker Image selbst bauen
+## Build Docker Image Locally
 
 ```bash
 docker build -t seabird-label-printer .
 docker run -d -p 8081:80 -p 8443:443 -e HTTPS_PORT=8443 seabird-label-printer
 ```
 
-> **Hinweis – Web Bluetooth & Secure Context**:
-> Web Bluetooth erfordert HTTPS oder `localhost`. Das Docker Image enthält
-> ein selbst-signiertes SSL-Zertifikat – beim ersten Aufruf die Browser-Warnung akzeptieren.
-> Für ein gültiges Zertifikat einen Reverse-Proxy verwenden (z.B. Caddy, Traefik).
+> **Note – Web Bluetooth & Secure Context**:
+> Web Bluetooth requires HTTPS or `localhost`. The Docker image includes a
+> self-signed SSL certificate – just accept the browser warning on first visit.
+> For a trusted certificate, use a reverse proxy (e.g., Caddy, Traefik).
 
-## Protokoll (SSBP)
+## Protocol (SSBP)
 
-Das proprietäre Protokoll wurde aus der Seabird Sticker Printer APK (v1.32.9) reverse-engineered:
+The proprietary protocol was reverse-engineered from the Seabird Sticker Printer APK (v1.32.9):
 
-| Eigenschaft | Wert |
+| Property | Value |
 |---|---|
 | BLE Service | `0xFFE0` |
 | BLE Characteristic | `0xFFE1` (Write + Notify) |
-| Protokoll-Header | `0xA3` |
-| Handshake | `A3 01 00 00 00 10` → Antwort `0x11` |
-| Geräteinfo | `A3 01 00 00 00 35` → Antwort `0x36` |
-| Papierstatus | `A3 01 00 00 00 45` → Antwort `0x46` |
-| Druckbefehl | `0x25` + Bitmap (1-bit Mono, spaltenweise) |
+| Protocol Header | `0xA3` |
+| Handshake | `A3 01 00 00 00 10` → Response `0x11` |
+| Device Info | `A3 01 00 00 00 35` → Response `0x36` |
+| Paper Status | `A3 01 00 00 00 45` → Response `0x46` |
+| Print Command | `0x25` + Bitmap (1-bit mono, column-wise) |
 
-## Dateistruktur
+## File Structure
 
 ```
-├── index.html         # Label-Editor (Haupt-App)
-├── explorer.html      # BLE Explorer (Debug-Tool)
+├── index.html         # Label editor (main app)
+├── explorer.html      # BLE explorer (debug tool)
 ├── style.css          # Styling
-├── app.js             # Editor-Logik
-├── printer.js         # BLE + SSBP Protokoll
-├── explorer.js        # Explorer-Logik
+├── app.js             # Editor logic
+├── printer.js         # BLE + SSBP protocol
+├── explorer.js        # Explorer logic
+├── nginx.conf         # HTTPS config
 ├── Dockerfile
-├── docker-compose.yml # Nutzt ghcr.io Image
-├── serve.ps1          # Lokaler HTTP-Server
-└── .github/workflows/ # CI/CD: Docker Image Build
+├── docker-compose.yml
+├── serve.ps1          # Local HTTP server
+└── .github/workflows/ # CI/CD: Docker image build
 ```

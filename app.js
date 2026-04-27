@@ -37,10 +37,10 @@ let paperWidth = 96; // will be updated after connection
 printer.onStatusChange = (status, detail) => {
   dom.statusDot.className = 'status-dot ' + status;
   const labels = {
-    disconnected: 'Nicht verbunden',
-    connecting: 'Verbinde...',
+    disconnected: 'Not connected',
+    connecting: 'Connecting...',
     handshake: 'Handshake...',
-    connected: `Verbunden: ${detail || ''}`,
+    connected: `Connected: ${detail || ''}`,
   };
   dom.statusText.textContent = labels[status] || status;
 
@@ -62,7 +62,7 @@ dom.connectBtn.addEventListener('click', async () => {
     await printer.connect();
   } catch (err) {
     if (err.name !== 'NotFoundError') {
-      showPrintStatus(`Fehler: ${err.message}`, 'error');
+      showPrintStatus(`Error: ${err.message}`, 'error');
     }
   } finally {
     dom.connectBtn.disabled = false;
@@ -90,13 +90,11 @@ function renderLabel() {
   ctx.font = fontStr;
   const lines = text.split('\n');
   const lineHeight = size * 1.25;
-  const textHeight = lines.length * lineHeight;
 
   let maxLineWidth = 0;
-  const measurements = lines.map(line => {
+  lines.forEach(line => {
     const m = ctx.measureText(line || ' ');
     if (m.width > maxLineWidth) maxLineWidth = m.width;
-    return m;
   });
 
   // Canvas dimensions
@@ -132,13 +130,11 @@ function renderLabel() {
     ctx.fillText(line, x, y);
   });
 
-  // Update preview sizing
   updatePreviewSize();
 }
 
 function updatePreviewSize() {
   const canvas = dom.canvas;
-  // Scale so the height is always visible nicely (min 200px CSS height)
   const zoom = Math.max(2, Math.floor(240 / (paperWidth || 96)));
   canvas.style.height = (canvas.height * zoom) + 'px';
   canvas.style.width = (canvas.width * zoom) + 'px';
@@ -175,21 +171,21 @@ dom.printBtn.addEventListener('click', async () => {
   dom.printBtn.disabled = true;
   dom.progressBar.classList.remove('hidden');
   dom.progressFill.style.width = '0%';
-  showPrintStatus('Bereite Druck vor...', 'info');
+  showPrintStatus('Preparing print...', 'info');
 
   try {
     const result = await printer.print(dom.canvas, copies, (phase, progress) => {
       const pct = Math.round(progress * 100);
       dom.progressFill.style.width = pct + '%';
-      if (phase === 'encode') showPrintStatus('Konvertiere Bild...', 'info');
-      else if (phase === 'send') showPrintStatus(`Sende Daten... ${pct}%`, 'info');
-      else if (phase === 'print') showPrintStatus('Drucke...', 'info');
+      if (phase === 'encode') showPrintStatus('Converting image...', 'info');
+      else if (phase === 'send') showPrintStatus(`Sending data... ${pct}%`, 'info');
+      else if (phase === 'print') showPrintStatus('Printing...', 'info');
     });
 
     dom.progressFill.style.width = '100%';
     showPrintStatus(result.message, result.success ? 'success' : 'error');
   } catch (err) {
-    showPrintStatus(`Fehler: ${err.message}`, 'error');
+    showPrintStatus(`Error: ${err.message}`, 'error');
   } finally {
     dom.printBtn.disabled = false;
     setTimeout(() => dom.progressBar.classList.add('hidden'), 3000);
@@ -203,7 +199,6 @@ function showPrintStatus(msg, type = 'info') {
 }
 
 // ── Init ───────────────────────────────────────────────────
-// Wait for fonts to load before first render
 if (document.fonts && document.fonts.ready) {
   document.fonts.ready.then(() => renderLabel());
 } else {

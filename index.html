@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Web-App zum Drucken von Labels auf dem Seabird P1-12A Bluetooth Thermodrucker">
+  <meta name="description" content="Web app for printing labels on the Seabird P1-12A Bluetooth thermal printer">
   <title>Seabird Label Printer</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,21 +15,21 @@
   <!-- Header -->
   <header class="app-header">
     <h1>🏷️ Seabird Label Printer</h1>
-    <p class="subtitle">P1-12A Thermodrucker – Web Bluetooth</p>
+    <p class="subtitle">P1-12A Thermal Printer – Web Bluetooth</p>
   </header>
 
   <!-- Connection Bar -->
   <div class="connection-bar">
     <div class="status-row">
       <div id="status-dot" class="status-dot disconnected"></div>
-      <span id="status-text" class="status-text">Nicht verbunden</span>
+      <span id="status-text" class="status-text">Not connected</span>
     </div>
     <div class="conn-actions">
       <button id="connect-btn" class="btn btn-primary btn-sm">
-        <span>⚡</span> Verbinden
+        <span>⚡</span> Connect
       </button>
       <button id="disconnect-btn" class="btn btn-danger btn-sm hidden">
-        <span>✕</span> Trennen
+        <span>✕</span> Disconnect
       </button>
     </div>
   </div>
@@ -37,8 +37,8 @@
   <!-- Label Preview -->
   <section class="panel preview-panel">
     <div class="panel-header">
-      <span class="panel-title">📐 Vorschau</span>
-      <span class="preview-hint">Originalgröße × 3</span>
+      <span class="panel-title">📐 Preview</span>
+      <span class="preview-hint">Original size × 3</span>
     </div>
     <div id="preview-wrap" class="preview-wrap">
       <canvas id="label-canvas" width="300" height="96"></canvas>
@@ -48,19 +48,19 @@
   <!-- Editor Controls -->
   <section class="panel editor-panel">
     <div class="panel-header">
-      <span class="panel-title">✏️ Label bearbeiten</span>
+      <span class="panel-title">✏️ Edit Label</span>
     </div>
     <div class="panel-body editor-grid">
 
       <!-- Text Input -->
       <div class="field full-width">
         <label for="label-text">Text</label>
-        <textarea id="label-text" rows="2" placeholder="Label-Text eingeben...">Hallo Welt!</textarea>
+        <textarea id="label-text" rows="2" placeholder="Enter label text...">Hello World!</textarea>
       </div>
 
       <!-- Font -->
       <div class="field">
-        <label for="font-select">Schriftart</label>
+        <label for="font-select">Font</label>
         <select id="font-select">
           <option value="Inter" selected>Inter</option>
           <option value="Roboto">Roboto</option>
@@ -77,24 +77,24 @@
 
       <!-- Font Size -->
       <div class="field">
-        <label for="font-size">Größe: <span id="font-size-val">32px</span></label>
+        <label for="font-size">Size: <span id="font-size-val">32px</span></label>
         <input type="range" id="font-size" min="8" max="80" value="32" step="1">
       </div>
 
       <!-- Alignment + Bold -->
       <div class="field">
-        <label>Ausrichtung</label>
+        <label>Alignment</label>
         <div class="btn-group">
-          <button class="align-btn" data-align="left" title="Linksbündig">◧</button>
-          <button class="align-btn active" data-align="center" title="Zentriert">◫</button>
-          <button class="align-btn" data-align="right" title="Rechtsbündig">◨</button>
-          <button id="bold-toggle" class="align-btn" title="Fett">B</button>
+          <button class="align-btn" data-align="left" title="Left">◧</button>
+          <button class="align-btn active" data-align="center" title="Center">◫</button>
+          <button class="align-btn" data-align="right" title="Right">◨</button>
+          <button id="bold-toggle" class="align-btn" title="Bold">B</button>
         </div>
       </div>
 
       <!-- Padding -->
       <div class="field">
-        <label for="label-padding">Innenabstand (px)</label>
+        <label for="label-padding">Padding (px)</label>
         <input type="number" id="label-padding" value="12" min="0" max="50" step="1">
       </div>
 
@@ -105,11 +105,11 @@
   <section class="panel print-panel">
     <div class="panel-body print-row">
       <div class="field compact">
-        <label for="copies">Kopien</label>
+        <label for="copies">Copies</label>
         <input type="number" id="copies" value="1" min="1" max="99" step="1">
       </div>
       <button id="print-btn" class="btn btn-print" disabled>
-        🖨️ Drucken
+        🖨️ Print
       </button>
     </div>
     <div id="progress-bar" class="progress-bar hidden">
