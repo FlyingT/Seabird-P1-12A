@@ -246,10 +246,11 @@ class SeabirdPrinter {
     const bitmap = [];
 
     // Column-major: each source column x → one printer data row
-    for (let x = 0; x < w; x++) {
+    // Iterate backwards on both axes to rotate 180 degrees (so text prints right-side up)
+    for (let x = w - 1; x >= 0; x--) {
       let cell = 0;
       let cellIdx = 128;
-      for (let y = 0; y < h; y++) {
+      for (let y = h - 1; y >= 0; y--) {
         const pos = (y * w + x) * 4;
         const r = data[pos], g = data[pos + 1], b = data[pos + 2];
         const gray = (r + g + b) / 3;
