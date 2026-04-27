@@ -231,23 +231,25 @@ class SeabirdPrinter {
   }
 
   // ── Bitmap Encoding ──────────────────────────────────────
-  // Encode source canvas directly in row-major order.
-  // The APK's rotation + column-major scan is mathematically equivalent
-  // to scanning the source canvas row-by-row (y=0..height-1),
-  // left-to-right (x=0..width-1). White=1, Black=0, MSB first.
+  // Encode source canvas in column-major order:
+  // Each source column (x) = one data row for the printer (96 bits = 12 bytes).
+  // The printer prints each data row across its print head (paper width),
+  // advancing the paper one pixel in the feed direction per row.
+  // This maps: source X → feed direction, source Y → print head direction.
+  // White=1, Black=0, MSB first.
   _encodeCanvas(sourceCanvas) {
-    const w = sourceCanvas.width;   // label length
-    const h = sourceCanvas.height;  // paper width (96)
+    const w = sourceCanvas.width;   // label length (feed direction)
+    const h = sourceCanvas.height;  // paper width (96 = print head)
     const ctx = sourceCanvas.getContext('2d');
     const data = ctx.getImageData(0, 0, w, h).data;
 
     const bitmap = [];
 
-    // Row-major: for each row of print head (y), scan label length (x)
-    for (let y = 0; y < h; y++) {
+    // Column-major: each source column x → one printer data row
+    for (let x = 0; x < w; x++) {
       let cell = 0;
       let cellIdx = 128;
-      for (let x = 0; x < w; x++) {
+      for (let y = 0; y < h; y++) {
         const pos = (y * w + x) * 4;
         const r = data[pos], g = data[pos + 1], b = data[pos + 2];
         const gray = (r + g + b) / 3;
@@ -287,13 +289,13 @@ class SeabirdPrinter {
     h.push(copies);      // Number of copies
     h.push(0);           // Flags (no cutter line)
 
-    // [12-13] Label length in pixels (feed direction)
-    h.push(labelLength & 0xFF);
-    h.push((labelLength >> 8) & 0xFF);
-
-    // [14-15] Paper/head width in pixels (e.g. 96)
+    // [12-13] Print head width in pixels (e.g. 96)
     h.push(headWidth & 0xFF);
     h.push((headWidth >> 8) & 0xFF);
+
+    // [14-15] Label length in pixels (feed direction)
+    h.push(labelLength & 0xFF);
+    h.push((labelLength >> 8) & 0xFF);
 
     h.push(1);  // Bit depth: 1 = 1-bit mono
     h.push(0);  // Reserved
