@@ -168,8 +168,6 @@ dom.printBtn.addEventListener('click', async () => {
   if (!printer.connected) return;
 
   const copies = parseInt(dom.copies.value) || 1;
-  const flipX = document.getElementById('flip-x') ? document.getElementById('flip-x').checked : false;
-  const flipY = document.getElementById('flip-y') ? document.getElementById('flip-y').checked : false;
   
   dom.printBtn.disabled = true;
   dom.progressBar.classList.remove('hidden');
@@ -177,7 +175,7 @@ dom.printBtn.addEventListener('click', async () => {
   showPrintStatus('Preparing print...', 'info');
 
   try {
-    const result = await printer.print(dom.canvas, copies, flipX, flipY, (phase, progress) => {
+    const result = await printer.print(dom.canvas, copies, (phase, progress) => {
       const pct = Math.round(progress * 100);
       dom.progressFill.style.width = pct + '%';
       if (phase === 'encode') showPrintStatus('Converting image...', 'info');

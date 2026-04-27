@@ -182,7 +182,7 @@ class SeabirdPrinter {
   }
 
   // ── Print ────────────────────────────────────────────────
-  async print(canvas, copies = 1, flipX = false, flipY = false, onProgress = null) {
+  async print(canvas, copies = 1, onProgress = null) {
     if (!this.connected || !this.characteristic) {
       throw new Error('Printer not connected');
     }
@@ -194,7 +194,7 @@ class SeabirdPrinter {
     onProgress && onProgress('encode', 0);
     const labelLength = canvas.width;
     const headWidth = canvas.height; // paper width in pixels (96)
-    const bitmap = this._encodeCanvas(canvas, flipX, flipY);
+    const bitmap = this._encodeCanvas(canvas);
 
     // Step 2: Build print packet
     const packet = this._buildPrintPacket(labelLength, headWidth, bitmap, copies);
@@ -237,7 +237,7 @@ class SeabirdPrinter {
   // advancing the paper one pixel in the feed direction per row.
   // This maps: source X → feed direction, source Y → print head direction.
   // White=1, Black=0, MSB first.
-  _encodeCanvas(sourceCanvas, flipX = false, flipY = false) {
+  _encodeCanvas(sourceCanvas) {
     const w = sourceCanvas.width;   // label length (feed direction)
     const h = sourceCanvas.height;  // paper width (96 = print head)
     const ctx = sourceCanvas.getContext('2d');
@@ -245,13 +245,16 @@ class SeabirdPrinter {
 
     const bitmap = [];
 
-    const startX = flipX ? w - 1 : 0;
-    const endX = flipX ? -1 : w;
-    const stepX = flipX ? -1 : 1;
+    // To fix mirroring, we iterate X backwards (right-to-left)
+    // which puts the end of the text at the leading edge of the label.
+    // This perfectly aligns with "Print direction ➡" where Right = label start.
+    const startX = w - 1;
+    const endX = -1;
+    const stepX = -1;
 
-    const startY = flipY ? h - 1 : 0;
-    const endY = flipY ? -1 : h;
-    const stepY = flipY ? -1 : 1;
+    const startY = 0;
+    const endY = h;
+    const stepY = 1;
 
     // Column-major: each source column x → one printer data row
     for (let x = startX; x !== endX; x += stepX) {
