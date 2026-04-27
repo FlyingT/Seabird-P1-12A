@@ -1,0 +1,7 @@
+services:
+  label-printer:
+    image: ghcr.io/flyingt/seabird-p1-12a:latest
+    container_name: seabird-label-printer
+    ports:
+      - "8081:80"
+    restart: unless-stopped

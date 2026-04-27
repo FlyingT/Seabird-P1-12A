@@ -1,0 +1,8 @@
+apk_extracted/
+*.apk
+node_modules/
+.git/
+*.md
+serve.ps1
+.gitignore
+.dockerignore

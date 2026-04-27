@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="BLE Explorer für Seabird P1-12A Label Printer – Bluetooth Services und Characteristics entdecken">
+  <title>BLE Explorer – Seabird Label Printer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-container">
+
+  <!-- Header -->
+  <header class="app-header">
+    <h1>🔍 BLE Explorer</h1>
+    <p class="subtitle">Seabird P1-12A Label Printer – Protokoll-Erkundung</p>
+  </header>
+
+  <!-- Info Banner -->
+  <div class="info-banner">
+    <span class="icon">💡</span>
+    <p>
+      <strong>Phase 1: Discovery.</strong> Verbinde dich mit dem Drucker, um alle BLE Services und
+      Characteristics aufzulisten. Damit finden wir heraus, welches Protokoll der Drucker verwendet.
+      Nutze <strong>Chrome</strong> oder <strong>Edge</strong> – andere Browser unterstützen Web Bluetooth nicht.
+    </p>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <div id="status-indicator" class="status-indicator"></div>
+    <span id="status-text" class="status-text">Nicht verbunden</span>
+  </div>
+
+  <!-- Connect -->
+  <div class="connect-section">
+    <button id="connect-btn" class="btn btn-primary">
+      <span class="icon">⚡</span> Drucker verbinden
+    </button>
+    <button id="disconnect-btn" class="btn btn-danger hidden">
+      <span class="icon">✕</span> Trennen
+    </button>
+  </div>
+
+  <!-- Main Grid -->
+  <div class="grid-2">
+
+    <!-- Services Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title"><span class="icon">📦</span> Services & Characteristics</span>
+      </div>
+      <div class="panel-body">
+        <div id="services-list">
+          <div class="services-empty">
+            Noch nicht verbunden.<br>
+            Klicke oben auf „Drucker verbinden".
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interaction Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title"><span class="icon">🛠️</span> Interaktion</span>
+      </div>
+      <div class="panel-body">
+
+        <!-- Selected Characteristic Info -->
+        <div id="selected-char-info" style="font-size:0.82rem;color:var(--text-muted);margin-bottom:0.75rem;">
+          Klicke auf eine Characteristic links um sie auszuwählen
+        </div>
+
+        <!-- Action Buttons -->
+        <div id="char-actions" class="hidden">
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.75rem;">
+            <button id="read-btn" class="btn btn-sm btn-ghost" disabled>📖 Lesen</button>
+            <button id="notify-btn" class="btn btn-sm btn-ghost" disabled>🔔 Notify</button>
+          </div>
+
+          <!-- Hex Input -->
+          <div class="input-row">
+            <input type="text" id="hex-input" class="hex-input"
+                   placeholder="Hex-Daten (z.B. 51 78 A2 00 01 00 00 00 FF)"
+                   disabled>
+            <button id="send-btn" class="btn btn-sm btn-primary" disabled>
+              ▶ Senden
+            </button>
+          </div>
+
+          <!-- Quick Commands -->
+          <div class="mt-2">
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.35rem;">Seabird SSBP Protokoll-Kommandos (aus APK):</div>
+            <div class="quick-commands">
+              <button class="cmd-chip" data-cmd="A3 01 00 00 00 10" title="Handshake – Drucker meldet sich mit 0x11">🤝 Handshake</button>
+              <button class="cmd-chip" data-cmd="A3 01 00 00 00 35" title="Geräteinfo abfragen – Antwort 0x36">📋 Geräteinfo</button>
+              <button class="cmd-chip" data-cmd="A3 01 00 00 00 45" title="Papier/Kassetten-Status – Antwort 0x46">📦 Papierstatus</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Console Panel -->
+  <div class="grid-full">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title"><span class="icon">📟</span> Konsole</span>
+        <div style="display:flex;gap:0.5rem;">
+          <button id="export-log-btn" class="btn btn-sm btn-ghost">💾 Export</button>
+          <button id="clear-log-btn" class="btn btn-sm btn-ghost">🗑️ Löschen</button>
+        </div>
+      </div>
+      <div class="panel-body" style="padding:0.75rem;">
+        <div id="console-area" class="console-area"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="explorer.js"></script>
+</body>
+</html>
