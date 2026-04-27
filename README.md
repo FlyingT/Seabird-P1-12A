@@ -2,7 +2,7 @@
 
 Web app for printing labels on the **Seabird P1-12A** Bluetooth thermal printer directly from your computer.
 
-Replaces the discontinued Android app "Seabird Sticker Printer" with a browser-based solution using the Web Bluetooth API.
+Replaces the discontinued Android app "Seabird Sticker Printer" with a browser-based solution using the Web Bluetooth API. Vibe-Coded with Antigravity + Claude and Gemini.
 
 ## Features
 

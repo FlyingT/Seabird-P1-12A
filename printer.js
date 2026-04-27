@@ -182,7 +182,7 @@ class SeabirdPrinter {
   }
 
   // ── Print ────────────────────────────────────────────────
-  async print(canvas, copies = 1, onProgress) {
+  async print(canvas, copies = 1, flipX = false, flipY = false, onProgress = null) {
     if (!this.connected || !this.characteristic) {
       throw new Error('Printer not connected');
     }
@@ -190,11 +190,11 @@ class SeabirdPrinter {
     copies = Math.max(1, Math.min(99, copies));
     const paperWidth = this.getPaperWidth();
 
-    // Step 1: Encode canvas bitmap (row-major, no rotation needed)
+    // Step 1: Encode canvas bitmap
     onProgress && onProgress('encode', 0);
     const labelLength = canvas.width;
     const headWidth = canvas.height; // paper width in pixels (96)
-    const bitmap = this._encodeCanvas(canvas);
+    const bitmap = this._encodeCanvas(canvas, flipX, flipY);
 
     // Step 2: Build print packet
     const packet = this._buildPrintPacket(labelLength, headWidth, bitmap, copies);
@@ -237,7 +237,7 @@ class SeabirdPrinter {
   // advancing the paper one pixel in the feed direction per row.
   // This maps: source X → feed direction, source Y → print head direction.
   // White=1, Black=0, MSB first.
-  _encodeCanvas(sourceCanvas) {
+  _encodeCanvas(sourceCanvas, flipX = false, flipY = false) {
     const w = sourceCanvas.width;   // label length (feed direction)
     const h = sourceCanvas.height;  // paper width (96 = print head)
     const ctx = sourceCanvas.getContext('2d');
@@ -245,12 +245,19 @@ class SeabirdPrinter {
 
     const bitmap = [];
 
+    const startX = flipX ? w - 1 : 0;
+    const endX = flipX ? -1 : w;
+    const stepX = flipX ? -1 : 1;
+
+    const startY = flipY ? h - 1 : 0;
+    const endY = flipY ? -1 : h;
+    const stepY = flipY ? -1 : 1;
+
     // Column-major: each source column x → one printer data row
-    // Iterate backwards on both axes to rotate 180 degrees (so text prints right-side up)
-    for (let x = w - 1; x >= 0; x--) {
+    for (let x = startX; x !== endX; x += stepX) {
       let cell = 0;
       let cellIdx = 128;
-      for (let y = h - 1; y >= 0; y--) {
+      for (let y = startY; y !== endY; y += stepY) {
         const pos = (y * w + x) * 4;
         const r = data[pos], g = data[pos + 1], b = data[pos + 2];
         const gray = (r + g + b) / 3;
