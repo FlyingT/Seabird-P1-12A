@@ -190,12 +190,14 @@ class SeabirdPrinter {
     copies = Math.max(1, Math.min(99, copies));
     const paperWidth = this.getPaperWidth();
 
-    // Step 1: Rotate canvas 90° CW and encode bitmap
+    // Step 1: Encode canvas bitmap (row-major, no rotation needed)
     onProgress && onProgress('encode', 0);
-    const { rotatedWidth, rotatedHeight, bitmap } = this._encodeCanvas(canvas, paperWidth);
+    const labelLength = canvas.width;
+    const headWidth = canvas.height; // paper width in pixels (96)
+    const bitmap = this._encodeCanvas(canvas);
 
     // Step 2: Build print packet
-    const packet = this._buildPrintPacket(rotatedWidth, rotatedHeight, bitmap, copies);
+    const packet = this._buildPrintPacket(labelLength, headWidth, bitmap, copies);
 
     // Step 3: Send data in chunks
     onProgress && onProgress('send', 0);
@@ -228,48 +230,26 @@ class SeabirdPrinter {
     return { success: true, message: 'Data sent' };
   }
 
-  // ── Bitmap Encoding (from APK: CzzBlue.js zzDocToData_make_real) ──
-  _encodeCanvas(sourceCanvas, paperWidth) {
-    // Source: user's label (wide × short, e.g., 300×96)
-    // We rotate 90° CW: rotated is (paperWidth × labelLength)
-    const srcW = sourceCanvas.width;
-    const srcH = sourceCanvas.height;
-    const srcCtx = sourceCanvas.getContext('2d');
-    const srcData = srcCtx.getImageData(0, 0, srcW, srcH).data;
+  // ── Bitmap Encoding ──────────────────────────────────────
+  // Encode source canvas directly in row-major order.
+  // The APK's rotation + column-major scan is mathematically equivalent
+  // to scanning the source canvas row-by-row (y=0..height-1),
+  // left-to-right (x=0..width-1). White=1, Black=0, MSB first.
+  _encodeCanvas(sourceCanvas) {
+    const w = sourceCanvas.width;   // label length
+    const h = sourceCanvas.height;  // paper width (96)
+    const ctx = sourceCanvas.getContext('2d');
+    const data = ctx.getImageData(0, 0, w, h).data;
 
-    // Create rotated canvas
-    const rotW = srcH;  // paper width (e.g., 96)
-    const rotH = srcW;  // label length
-    const rotCanvas = document.createElement('canvas');
-    rotCanvas.width = rotW;
-    rotCanvas.height = rotH;
-    const rotCtx = rotCanvas.getContext('2d');
-    const rotImgData = rotCtx.getImageData(0, 0, rotW, rotH);
-    const rotData = rotImgData.data;
-
-    // Rotate 90° CW: rotated(x,y) = source(srcW - y - 1, x)
-    for (let x = 0; x < rotW; x++) {
-      for (let y = 0; y < rotH; y++) {
-        const ri = (y * rotW + x) * 4;
-        const sx = srcW - y - 1;
-        const sy = x;
-        const si = (sy * srcW + sx) * 4;
-        rotData[ri] = srcData[si];
-        rotData[ri + 1] = srcData[si + 1];
-        rotData[ri + 2] = srcData[si + 2];
-        rotData[ri + 3] = srcData[si + 3];
-      }
-    }
-
-    // Encode to 1-bit monochrome bitmap (column by column, bottom to top)
-    // From APK: "黑色对齐" – white=1, black=0
     const bitmap = [];
-    for (let x = 0; x < rotW; x++) {
+
+    // Row-major: for each row of print head (y), scan label length (x)
+    for (let y = 0; y < h; y++) {
       let cell = 0;
       let cellIdx = 128;
-      for (let y = rotH - 1; y >= 0; y--) {
-        const pos = (y * rotW + x) * 4;
-        const r = rotData[pos], g = rotData[pos + 1], b = rotData[pos + 2];
+      for (let x = 0; x < w; x++) {
+        const pos = (y * w + x) * 4;
+        const r = data[pos], g = data[pos + 1], b = data[pos + 2];
         const gray = (r + g + b) / 3;
         const isWhite = gray >= 128 ? 1 : 0;
         if (isWhite) cell |= cellIdx;
@@ -280,13 +260,13 @@ class SeabirdPrinter {
           cellIdx = 128;
         }
       }
-      if (cellIdx !== 128) bitmap.push(cell);
+      if (cellIdx !== 128) bitmap.push(cell); // flush partial byte
     }
 
-    return { rotatedWidth: rotW, rotatedHeight: rotH, bitmap };
+    return bitmap;
   }
 
-  _buildPrintPacket(width, height, bitmap, copies) {
+  _buildPrintPacket(labelLength, headWidth, bitmap, copies) {
     const h = [];
 
     // Message header
@@ -307,13 +287,13 @@ class SeabirdPrinter {
     h.push(copies);      // Number of copies
     h.push(0);           // Flags (no cutter line)
 
-    // Image width = paper head width (e.g. 96) – "典型值96,150"
-    h.push(width & 0xFF);
-    h.push((width >> 8) & 0xFF);
+    // [12-13] Label length in pixels (feed direction)
+    h.push(labelLength & 0xFF);
+    h.push((labelLength >> 8) & 0xFF);
 
-    // Image height = label feed length
-    h.push(height & 0xFF);
-    h.push((height >> 8) & 0xFF);
+    // [14-15] Paper/head width in pixels (e.g. 96)
+    h.push(headWidth & 0xFF);
+    h.push((headWidth >> 8) & 0xFF);
 
     h.push(1);  // Bit depth: 1 = 1-bit mono
     h.push(0);  // Reserved
