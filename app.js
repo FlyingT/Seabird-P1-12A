@@ -98,7 +98,8 @@ function renderLabel() {
   });
 
   // Canvas dimensions
-  const labelWidth = Math.max(Math.ceil(maxLineWidth) + padding * 2, pw);
+  // Use a minimum width of 40px, but otherwise tightly wrap the text + padding.
+  const labelWidth = Math.max(Math.ceil(maxLineWidth) + padding * 2, 40);
   canvas.width = labelWidth;
   canvas.height = pw;
 
