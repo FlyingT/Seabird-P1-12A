@@ -4,4 +4,7 @@ services:
     container_name: seabird-label-printer
     ports:
       - "8081:80"
+      - "8443:443"
+    environment:
+      - HTTPS_PORT=8443
     restart: unless-stopped

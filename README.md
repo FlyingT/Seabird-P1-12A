@@ -25,10 +25,12 @@ Ersetzt die Android-App „Seabird Sticker Printer" durch eine browserbasierte L
 wget https://raw.githubusercontent.com/FlyingT/Seabird-P1-12A/main/docker-compose.yml
 docker compose up -d
 
-# Öffnen: http://localhost:8081
+# Öffnen: https://192.168.x.x:8443
+# (Zertifikatswarnung im Browser akzeptieren)
 ```
 
 Das Docker Image wird automatisch von GitHub Container Registry (`ghcr.io`) gezogen.
+HTTPS mit selbst-signiertem Zertifikat ist integriert – einfach die Warnung im Browser akzeptieren.
 
 ## Lokal entwickeln
 
@@ -43,11 +45,13 @@ powershell -ExecutionPolicy Bypass -File serve.ps1
 
 ```bash
 docker build -t seabird-label-printer .
-docker run -d -p 8081:80 seabird-label-printer
+docker run -d -p 8081:80 -p 8443:443 -e HTTPS_PORT=8443 seabird-label-printer
 ```
 
-> **Hinweis**: Web Bluetooth funktioniert nur über `localhost` oder HTTPS.
-> Für Remote-Zugriff einen Reverse-Proxy mit SSL verwenden (z.B. Caddy, Traefik).
+> **Hinweis – Web Bluetooth & Secure Context**:
+> Web Bluetooth erfordert HTTPS oder `localhost`. Das Docker Image enthält
+> ein selbst-signiertes SSL-Zertifikat – beim ersten Aufruf die Browser-Warnung akzeptieren.
+> Für ein gültiges Zertifikat einen Reverse-Proxy verwenden (z.B. Caddy, Traefik).
 
 ## Protokoll (SSBP)
 
